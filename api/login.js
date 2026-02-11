@@ -1,36 +1,60 @@
-export default function handler(request, response) {
-    // 1. Solo permitimos peticiones POST (enviar datos)
-    if (request.method !== 'POST') {
-        return response.status(405).json({ error: 'Método no permitido' });
+import clientPromise from '../lib/mongodb';
+
+export default async function handler(req, res) {
+  // 1. CABECERAS PARA EVITAR ERRORES DE PERMISOS (CORS)
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  // 2. Solo aceptamos POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Solo se permite POST' });
+  }
+
+  try {
+    const client = await clientPromise;
+    const db = client.db("tienda_zapatillas");
+
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Faltan datos' });
     }
 
-    // 2. Recibimos los datos que envía Android
-    const { username, password } = request.body;
+    // 3. BUSCAR AL USUARIO EN MONGODB
+    // Buscamos alguien que tenga ESE usuario y ESA contraseña
+    const user = await db.collection("users").findOne({ 
+        username: username,
+        password: password 
+    });
 
-    // 3. Simulación de base de datos (luego pondremos MongoDB aquí)
-    const usuariosRegistrados = [
-        { username: "juan", password: "1234" },
-        { username: "maria", password: "abcd" },
-        { username: "admin", password: "admin" }
-    ];
-
-    // 4. Comprobamos si existe
-    const usuarioEncontrado = usuariosRegistrados.find(
-        user => user.username === username && user.password === password
-    );
-
-    if (usuarioEncontrado) {
-        // ÉXITO: Devolvemos un JSON diciendo que todo ok
-        return response.status(200).json({ 
+    // 4. RESPONDER A LA APP
+    if (user) {
+        // ¡Encontrado!
+        return res.status(200).json({ 
             success: true, 
-            message: "Login correcto",
-            user: usuarioEncontrado.username 
+            message: "Login correcto", 
+            userId: user._id 
         });
     } else {
-        // ERROR: Credenciales malas
-        return response.status(401).json({ 
+        // No existe o contraseña mal
+        return res.status(200).json({ 
             success: false, 
             message: "Usuario o contraseña incorrectos" 
         });
     }
+
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ success: false, message: 'Error interno: ' + e.message });
+  }
 }
