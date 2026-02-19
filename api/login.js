@@ -32,25 +32,28 @@ export default async function handler(req, res) {
 
     // 3. BUSCAR AL USUARIO EN MONGODB
     // Buscamos alguien que tenga ESE usuario y ESA contraseña
-    const user = await db.collection("users").findOne({ 
-        username: username,
-        password: password 
+    const user = await db.collection("users").findOne({
+      username: username,
+      password: password
     });
 
     // 4. RESPONDER A LA APP
     if (user) {
-        // ¡Encontrado!
-        return res.status(200).json({ 
-            success: true, 
-            message: "Login correcto", 
-            userId: user._id 
-        });
+      // ¡Encontrado!
+      return res.status(200).json({
+        success: true,
+        message: "Login correcto",
+        username: user.username, // Enviamos el nombre
+        email: user.email,       // Enviamos el email guardado
+        fecha: user.fechaRegistro, // Enviamos la fecha
+        userId: user._id
+      });
     } else {
-        // No existe o contraseña mal
-        return res.status(200).json({ 
-            success: false, 
-            message: "Usuario o contraseña incorrectos" 
-        });
+      // No existe o contraseña mal
+      return res.status(200).json({
+        success: false,
+        message: "Usuario o contraseña incorrectos"
+      });
     }
 
   } catch (e) {
