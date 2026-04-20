@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     const { username, shoeId } = req.body;
 
-    if (!username || shoeId === undefined || shoeId === null) {
+    if (!username || !shoeId) {
       return res.status(400).json({
         success: false,
         message: 'Faltan datos'
@@ -41,21 +41,19 @@ export default async function handler(req, res) {
     }
 
     const favoritos = Array.isArray(user.favoritos) ? user.favoritos : [];
-    const shoeIdNumber = Number(shoeId);
-    const yaExiste = favoritos.includes(shoeIdNumber);
-
-    let update;
+    const yaExiste = favoritos.includes(shoeId);
 
     if (yaExiste) {
-      update = { $pull: { favoritos: shoeIdNumber } };
+      await db.collection("users").updateOne(
+        { username },
+        { $pull: { favoritos: shoeId } }
+      );
     } else {
-      update = { $addToSet: { favoritos: shoeIdNumber } };
+      await db.collection("users").updateOne(
+        { username },
+        { $addToSet: { favoritos: shoeId } }
+      );
     }
-
-    await db.collection("users").updateOne(
-      { username },
-      update
-    );
 
     return res.status(200).json({
       success: true,
