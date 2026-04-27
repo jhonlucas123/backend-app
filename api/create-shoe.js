@@ -32,11 +32,12 @@ export default async function handler(req, res) {
       precio,
       categoria,
       marca,
+      calidad,
       fotoUrl,
       vendedor
     } = req.body;
 
-    if (!titulo || !descripcion || !precio || !categoria || !marca || !fotoUrl || !vendedor) {
+    if (!titulo || !descripcion || !precio || !categoria || !marca || !calidad || !fotoUrl || !vendedor) {
       return res.status(400).json({
         success: false,
         message: 'Faltan datos'
@@ -49,6 +50,8 @@ export default async function handler(req, res) {
       precio: Number(precio),
       categoria,
       marca,
+      calidad: Number(calidad),
+      disponibilidad: "Disponible",
       fotoUrl,
       vendedor,
       fechaPublicacion: new Date()
