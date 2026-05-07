@@ -37,21 +37,30 @@ export default async function handler(req, res) {
       vendedor
     } = req.body;
 
-    if (!titulo || !descripcion || !precio || !categoria || !marca || !calidad || !fotoUrl || !vendedor) {
+    // La descripción ya NO es obligatoria
+    if (!titulo || !precio || !categoria || !marca || !calidad || !fotoUrl || !vendedor) {
       return res.status(400).json({
         success: false,
-        message: 'Faltan datos'
+        message: 'Faltan datos obligatorios'
       });
     }
 
     const nuevaZapatilla = {
-      titulo,
-      descripcion,
+      titulo: String(titulo).trim(),
+
+      // Si no viene descripción, guardamos texto por defecto
+      descripcion: descripcion && String(descripcion).trim() !== ""
+        ? String(descripcion).trim()
+        : "Sin descripción",
+
       precio: Number(precio),
-      categoria,
-      marca,
+      categoria: String(categoria).trim(),
+      marca: String(marca).trim(),
       calidad: Number(calidad),
+
+      // Al crear publicación, siempre empieza disponible
       disponibilidad: "Disponible",
+
       fotoUrl,
       vendedor,
       fechaPublicacion: new Date()
