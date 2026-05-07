@@ -1,4 +1,5 @@
 import clientPromise from '../lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
   // CORS
@@ -26,52 +27,126 @@ export default async function handler(req, res) {
     const client = await clientPromise;
     const db = client.db("tienda_zapatillas");
 
-    const {
-      titulo,
-      descripcion,
-      precio,
-      categoria,
-      marca,
-      calidad,
-      fotoUrl,
-      vendedor
-    } = req.body;
+    const action = req.body.action || "createShoe";
 
-    // La descripción ya NO es obligatoria
-    if (!titulo || !precio || !categoria || !marca || !calidad || !fotoUrl || !vendedor) {
-      return res.status(400).json({
-        success: false,
-        message: 'Faltan datos obligatorios'
+    // CREAR PUBLICACIÓN
+    if (action === "createShoe") {
+      const {
+        titulo,
+        descripcion,
+        precio,
+        categoria,
+        marca,
+        calidad,
+        fotoUrl,
+        vendedor
+      } = req.body;
+
+      if (!titulo || !precio || !categoria || !marca || !calidad || !fotoUrl || !vendedor) {
+        return res.status(400).json({
+          success: false,
+          message: 'Faltan datos obligatorios'
+        });
+      }
+
+      const nuevaZapatilla = {
+        titulo: String(titulo).trim(),
+        descripcion: descripcion && String(descripcion).trim() !== ""
+          ? String(descripcion).trim()
+          : "Sin descripción",
+        precio: Number(precio),
+        categoria: String(categoria).trim(),
+        marca: String(marca).trim(),
+        calidad: Number(calidad),
+        disponibilidad: "Disponible",
+        fotoUrl,
+        vendedor,
+        fechaPublicacion: new Date()
+      };
+
+      const result = await db.collection("zapatillas").insertOne(nuevaZapatilla);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Zapatilla publicada correctamente',
+        shoeId: result.insertedId
       });
     }
 
-    const nuevaZapatilla = {
-      titulo: String(titulo).trim(),
+    // EDITAR PUBLICACIÓN
+    if (action === "updateShoe") {
+      const {
+        shoeId,
+        vendedor,
+        titulo,
+        descripcion,
+        precio,
+        disponibilidad,
+        fotoUrl
+      } = req.body;
 
-      // Si no viene descripción, guardamos texto por defecto
-      descripcion: descripcion && String(descripcion).trim() !== ""
-        ? String(descripcion).trim()
-        : "Sin descripción",
+      if (!shoeId || !vendedor || !titulo || !precio || !disponibilidad) {
+        return res.status(400).json({
+          success: false,
+          message: 'Faltan datos obligatorios'
+        });
+      }
 
-      precio: Number(precio),
-      categoria: String(categoria).trim(),
-      marca: String(marca).trim(),
-      calidad: Number(calidad),
+      const disponibilidadesValidas = ["Disponible", "En reserva", "Vendido"];
 
-      // Al crear publicación, siempre empieza disponible
-      disponibilidad: "Disponible",
+      if (!disponibilidadesValidas.includes(disponibilidad)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Disponibilidad no válida'
+        });
+      }
 
-      fotoUrl,
-      vendedor,
-      fechaPublicacion: new Date()
-    };
+      const zapatilla = await db.collection("zapatillas").findOne({
+        _id: new ObjectId(shoeId)
+      });
 
-    const result = await db.collection("zapatillas").insertOne(nuevaZapatilla);
+      if (!zapatilla) {
+        return res.status(404).json({
+          success: false,
+          message: 'Publicación no encontrada'
+        });
+      }
 
-    return res.status(201).json({
-      success: true,
-      message: 'Zapatilla publicada correctamente',
-      shoeId: result.insertedId
+      if (!zapatilla.vendedor || zapatilla.vendedor.toLowerCase() !== vendedor.toLowerCase()) {
+        return res.status(403).json({
+          success: false,
+          message: 'No puedes editar esta publicación'
+        });
+      }
+
+      const datosActualizar = {
+        titulo: String(titulo).trim(),
+        descripcion: descripcion && String(descripcion).trim() !== ""
+          ? String(descripcion).trim()
+          : "Sin descripción",
+        precio: Number(precio),
+        disponibilidad,
+        fechaActualizacion: new Date()
+      };
+
+      if (fotoUrl && String(fotoUrl).trim() !== "") {
+        datosActualizar.fotoUrl = String(fotoUrl).trim();
+      }
+
+      await db.collection("zapatillas").updateOne(
+        { _id: new ObjectId(shoeId) },
+        { $set: datosActualizar }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: 'Publicación actualizada correctamente'
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: 'Acción no válida'
     });
 
   } catch (e) {
