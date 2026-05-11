@@ -38,11 +38,12 @@ export default async function handler(req, res) {
         categoria,
         marca,
         calidad,
+        talla,
         fotoUrl,
         vendedor
       } = req.body;
 
-      if (!titulo || !precio || !categoria || !marca || !calidad || !fotoUrl || !vendedor) {
+      if (!titulo || !precio || !categoria || !marca || !calidad || !fotoUrl || !vendedor || !talla) {
         return res.status(400).json({
           success: false,
           message: 'Faltan datos obligatorios'
@@ -58,6 +59,7 @@ export default async function handler(req, res) {
         categoria: String(categoria).trim(),
         marca: String(marca).trim(),
         calidad: Number(calidad),
+        talla: String(talla).trim(),
         disponibilidad: "Disponible",
         fotoUrl,
         vendedor,
@@ -82,10 +84,11 @@ export default async function handler(req, res) {
         descripcion,
         precio,
         disponibilidad,
-        fotoUrl
+        fotoUrl,
+        talla
       } = req.body;
 
-      if (!shoeId || !vendedor || !titulo || !precio || !disponibilidad) {
+      if (!shoeId || !vendedor || !titulo || !precio || !disponibilidad || !talla) {
         return res.status(400).json({
           success: false,
           message: 'Faltan datos obligatorios'
@@ -125,6 +128,7 @@ export default async function handler(req, res) {
           ? String(descripcion).trim()
           : "Sin descripción",
         precio: Number(precio),
+        talla: String(talla).trim(),
         disponibilidad,
         fechaActualizacion: new Date()
       };
