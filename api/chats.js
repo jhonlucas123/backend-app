@@ -2,6 +2,7 @@ import clientPromise from '../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
+  // CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -35,7 +36,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // 1) Crear o recuperar chat
+    // Crear o recuperar chat
+    // ===============================
     if (action === "createOrGetChat") {
       const {
         zapatillaId,
@@ -86,7 +88,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2) Obtener chats del usuario
+    // Obtener chats del usuario
+    // ===============================
     if (action === "getUserChats") {
       const { username } = req.body;
 
@@ -118,7 +121,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // 3) Obtener mensajes de un chat
+    // Obtener mensajes de un chat
+    // ===============================
     if (action === "getMessages") {
       const { chatId } = req.body;
 
@@ -145,21 +149,48 @@ export default async function handler(req, res) {
       });
     }
 
-    // 4) Enviar mensaje
+    // Enviar mensaje
+    // ===============================
     if (action === "sendMessage") {
-      const { chatId, remitente, texto } = req.body;
+      const {
+        chatId,
+        emisor,
+        texto,
+        tipo,
+        imagenUrl
+      } = req.body;
 
-      if (!chatId || !remitente || !texto) {
+      if (!chatId || !emisor) {
         return res.status(400).json({
           success: false,
-          message: 'Faltan datos'
+          message: "Faltan datos obligatorios"
+        });
+      }
+
+      const tipoMensaje = tipo || "texto";
+      const textoMensaje = texto ? String(texto).trim() : "";
+      const imagenMensaje = imagenUrl ? String(imagenUrl).trim() : "";
+
+      if (tipoMensaje === "texto" && textoMensaje === "") {
+        return res.status(400).json({
+          success: false,
+          message: "El mensaje no puede estar vacío"
+        });
+      }
+
+      if (tipoMensaje === "imagen" && imagenMensaje === "") {
+        return res.status(400).json({
+          success: false,
+          message: "Falta la imagen del mensaje"
         });
       }
 
       const nuevoMensaje = {
         chatId,
-        remitente,
-        texto,
+        emisor,
+        texto: textoMensaje,
+        tipo: tipoMensaje,
+        imagenUrl: imagenMensaje,
         fecha: new Date()
       };
 
@@ -169,15 +200,15 @@ export default async function handler(req, res) {
         { _id: new ObjectId(chatId) },
         {
           $set: {
-            ultimoMensaje: texto,
+            ultimoMensaje: tipoMensaje === "imagen" ? "Imagen enviada" : textoMensaje,
             actualizadoEn: new Date()
           }
         }
       );
 
-      return res.status(201).json({
+      return res.status(200).json({
         success: true,
-        message: 'Mensaje enviado correctamente'
+        message: "Mensaje enviado correctamente"
       });
     }
 
@@ -188,6 +219,7 @@ export default async function handler(req, res) {
 
   } catch (e) {
     console.error(e);
+
     return res.status(500).json({
       success: false,
       message: 'Error interno: ' + e.message
