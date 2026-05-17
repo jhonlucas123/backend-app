@@ -93,7 +93,7 @@ export default async function handler(req, res) {
         ubicacion
       } = req.body;
 
-      if (!shoeId || !vendedor || !titulo || !precio || !disponibilidad || !talla || !ubicacion) {
+      if (!shoeId || !vendedor || !titulo || !precio || !disponibilidad || !talla) {
         return res.status(400).json({
           success: false,
           message: 'Faltan datos obligatorios'
@@ -134,12 +134,13 @@ export default async function handler(req, res) {
           : "Sin descripción",
         precio: Number(precio),
         talla: String(talla).trim(),
-        ubicacion: ubicacion && String(ubicacion).trim() !== ""
-          ? String(ubicacion).trim()
-          : zapatilla.ubicacion || "Ubicación no indicada",
         disponibilidad,
         fechaActualizacion: new Date()
       };
+
+      if (ubicacion && String(ubicacion).trim() !== "") {
+        datosActualizar.ubicacion = String(ubicacion).trim();
+      }
 
       if (fotoUrl && String(fotoUrl).trim() !== "") {
         datosActualizar.fotoUrl = String(fotoUrl).trim();
