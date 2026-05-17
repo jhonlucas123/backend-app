@@ -134,7 +134,9 @@ export default async function handler(req, res) {
           : "Sin descripción",
         precio: Number(precio),
         talla: String(talla).trim(),
-        ubicacion: String(ubicacion).trim(),
+        ubicacion: ubicacion && String(ubicacion).trim() !== ""
+          ? String(ubicacion).trim()
+          : zapatilla.ubicacion || "Ubicación no indicada",
         disponibilidad,
         fechaActualizacion: new Date()
       };
