@@ -43,10 +43,11 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         message: "Login correcto",
-        username: user.username, // Enviamos el nombre
-        email: user.email,       // Enviamos el email guardado
-        fecha: user.fechaRegistro, // Enviamos la fecha
-        userId: user._id
+        username: user.username,
+        email: user.email,
+        fecha: user.fechaRegistro,
+        userId: user._id,
+        role: user.rol || "user"
       });
     } else {
       // No existe o contraseña mal
