@@ -1,7 +1,7 @@
 import clientPromise from '../lib/mongodb';
 
 export default async function handler(req, res) {
-  // 1. AÑADE ESTO AL PRINCIPIO PARA EVITAR PROBLEMAS DE PERMISOS (CORS)
+ 
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
   // -----------------------------------------------------------
 
-  // 2. Solo aceptamos peticiones POST (enviar datos)
+  // 2. Solo aceptamos peticiones POST (
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
       username,
       password,
       email, // 4. Guardamos el email en el documento
-      rol: "cliente", 
+      rol: "user", 
       fechaRegistro: new Date()
     };
 

@@ -29,7 +29,8 @@ export default async function handler(req, res) {
 
     const action = req.body.action || "createShoe";
 
-    // CREAR PUBLICACIÓN
+    // Crear publicación
+    // ===============================
     if (action === "createShoe") {
       const {
         titulo,
@@ -39,11 +40,12 @@ export default async function handler(req, res) {
         marca,
         calidad,
         talla,
+        ubicacion,
         fotoUrl,
         vendedor
       } = req.body;
 
-      if (!titulo || !precio || !categoria || !marca || !calidad || !fotoUrl || !vendedor || !talla) {
+      if (!titulo || !precio || !categoria || !marca || !calidad || !talla || !ubicacion || !fotoUrl || !vendedor) {
         return res.status(400).json({
           success: false,
           message: 'Faltan datos obligatorios'
@@ -60,6 +62,7 @@ export default async function handler(req, res) {
         marca: String(marca).trim(),
         calidad: Number(calidad),
         talla: String(talla).trim(),
+        ubicacion: String(ubicacion).trim(),
         disponibilidad: "Disponible",
         fotoUrl,
         vendedor,
@@ -75,7 +78,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // EDITAR PUBLICACIÓN
+    // Editar publicación
+    // ===============================
     if (action === "updateShoe") {
       const {
         shoeId,
@@ -85,10 +89,11 @@ export default async function handler(req, res) {
         precio,
         disponibilidad,
         fotoUrl,
-        talla
+        talla,
+        ubicacion
       } = req.body;
 
-      if (!shoeId || !vendedor || !titulo || !precio || !disponibilidad || !talla) {
+      if (!shoeId || !vendedor || !titulo || !precio || !disponibilidad || !talla || !ubicacion) {
         return res.status(400).json({
           success: false,
           message: 'Faltan datos obligatorios'
@@ -129,6 +134,7 @@ export default async function handler(req, res) {
           : "Sin descripción",
         precio: Number(precio),
         talla: String(talla).trim(),
+        ubicacion: String(ubicacion).trim(),
         disponibilidad,
         fechaActualizacion: new Date()
       };
@@ -155,6 +161,7 @@ export default async function handler(req, res) {
 
   } catch (e) {
     console.error(e);
+
     return res.status(500).json({
       success: false,
       message: 'Error interno: ' + e.message
