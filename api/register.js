@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
   try {
     const client = await clientPromise;
-    const db = client.db("tienda_zapatillas"); // Tu base de datos
+    const db = client.db("tienda_zapatillas"); //  base de datos
 
     const { username, password, email } = req.body; // 1. Recibimos el email del cuerpo de la petición
 
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
       username,
       password,
       email, // 4. Guardamos el email en el documento
-      rol: "cliente", // Si quieres mantener lo de los roles [cite: 2026-01-22]
+      rol: "cliente", 
       fechaRegistro: new Date()
     };
 
